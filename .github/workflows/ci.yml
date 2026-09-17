@@ -21,7 +21,21 @@ jobs:
         run: dotnet restore AppTTHH.slnx
       - name: Build
         run: dotnet build AppTTHH.slnx -c Release --no-restore
-      - name: Test
-        run: dotnet test AppTTHH.slnx -c Release --no-build --logger trx
+      - name: Test with coverage
+        run: dotnet test AppTTHH.slnx -c Release --no-build --logger trx --collect:"XPlat Code Coverage" --results-directory TestResults
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: TestResults/**/coverage.cobertura.xml
+          if-no-files-found: error
+      - name: Enforce line coverage
+        shell: pwsh
+        run: |
+          $coverage = Get-ChildItem TestResults -Recurse -Filter coverage.cobertura.xml | Select-Object -First 1
+          [xml]$xml = Get-Content $coverage.FullName
+          $rate = [double]$xml.coverage.'line-rate'
+          if ($rate -lt 0.80) { throw "Line coverage $($rate * 100)% is below 80%." }
+          Write-Host "Line coverage: $([math]::Round($rate * 100, 2))%"
       - name: Docker build
         run: docker build -t apptthh:ci .
