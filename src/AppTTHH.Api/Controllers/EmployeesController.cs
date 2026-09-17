@@ -6,13 +6,14 @@ namespace AppTTHH.Api.Controllers;
 
 [ApiController]
 [Route("api/hr/employees")]
-[Authorize]
 public sealed class EmployeesController(EmployeeService service) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Policy = HrPermissions.EmployeesView)]
     public Task<IReadOnlyList<EmployeeDto>> GetAll(CancellationToken ct) => service.GetAllAsync(ct);
 
     [HttpGet("{id:guid}")]
+    [Authorize(Policy = HrPermissions.EmployeesView)]
     public async Task<ActionResult<EmployeeDto>> GetById(Guid id, CancellationToken ct)
     {
         var employee = await service.GetByIdAsync(id, ct);
@@ -20,6 +21,7 @@ public sealed class EmployeesController(EmployeeService service) : ControllerBas
     }
 
     [HttpPost]
+    [Authorize(Policy = HrPermissions.EmployeesManage)]
     public async Task<ActionResult<EmployeeDto>> Create(CreateEmployeeRequest request, CancellationToken ct)
     {
         var created = await service.CreateAsync(request, ct);
