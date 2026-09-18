@@ -39,9 +39,12 @@ public sealed class HrApiFactory : WebApplicationFactory<Program>
 {
     public HrApiFactory()
     {
-        Environment.SetEnvironmentVariable("Jwt__Issuer", "portal-corporativo");
-        Environment.SetEnvironmentVariable("Jwt__Audience", "portal-corporativo-clients");
-        Environment.SetEnvironmentVariable("Jwt__Secret", "IntegrationTestSecret_AtLeast32Characters_Long!");
+        Environment.SetEnvironmentVariable("Jwt__Issuer", null);
+        Environment.SetEnvironmentVariable("Jwt__Audience", null);
+        Environment.SetEnvironmentVariable("Jwt__Secret", null);
+        Environment.SetEnvironmentVariable("JWT_ISSUER", "portal-corporativo");
+        Environment.SetEnvironmentVariable("JWT_AUDIENCE", "portal-corporativo-clients");
+        Environment.SetEnvironmentVariable("JWT_SECRET", "IntegrationTestSecret_AtLeast32Characters_Long!");
         Environment.SetEnvironmentVariable("ConnectionStrings__HrDb", "Server=test;Database=test;User Id=test;Password=test;");
     }
 

@@ -6,7 +6,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
-var jwtSecret = builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret is required");
+var jwtSecret = builder.Configuration["Jwt:Secret"]
+    ?? builder.Configuration["JWT_SECRET"]
+    ?? throw new InvalidOperationException("Jwt:Secret or JWT_SECRET is required");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]
+    ?? builder.Configuration["JWT_ISSUER"]
+    ?? "portal-corporativo";
+var jwtAudience = builder.Configuration["Jwt:Audience"]
+    ?? builder.Configuration["JWT_AUDIENCE"]
+    ?? "portal-corporativo-clients";
 var hrDbConnection = builder.Configuration.GetConnectionString("HrDb") ?? throw new InvalidOperationException("ConnectionStrings:HrDb is required");
 
 builder.Services.AddControllers();
@@ -15,8 +23,8 @@ builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<EmployeeService>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o => o.TokenValidationParameters = new()
 {
-    ValidateIssuer = true, ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "portal-corporativo",
-    ValidateAudience = true, ValidAudience = builder.Configuration["Jwt:Audience"] ?? "portal-corporativo-clients",
+    ValidateIssuer = true, ValidIssuer = jwtIssuer,
+    ValidateAudience = true, ValidAudience = jwtAudience,
     ValidateLifetime = true, ValidateIssuerSigningKey = true,
     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)), ClockSkew = TimeSpan.FromMinutes(1)
 });
