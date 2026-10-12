@@ -10,11 +10,17 @@ public sealed class EmployeeRepository(HrDbContext db) : IEmployeeRepository
         await db.Employees.AsNoTracking().OrderBy(x => x.FullName).ToListAsync(ct);
 
     public Task<Employee?> GetByIdAsync(Guid id, CancellationToken ct) =>
-        db.Employees.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
+        db.Employees.FirstOrDefaultAsync(x => x.Id == id, ct);
 
     public async Task AddAsync(Employee employee, CancellationToken ct)
     {
         db.Employees.Add(employee);
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task UpdateAsync(Employee employee, CancellationToken ct)
+    {
+        db.Employees.Update(employee);
         await db.SaveChangesAsync(ct);
     }
 }

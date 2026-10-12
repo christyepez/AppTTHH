@@ -27,4 +27,28 @@ public sealed class EmployeesController(EmployeeService service) : ControllerBas
         var created = await service.CreateAsync(request, ct);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
+
+    [HttpPut("{id:guid}")]
+    [Authorize(Policy = HrPermissions.EmployeesManage)]
+    public async Task<ActionResult<EmployeeDto>> Update(Guid id, UpdateEmployeeRequest request, CancellationToken ct)
+    {
+        var updated = await service.UpdateAsync(id, request, ct);
+        return updated is null ? NotFound() : Ok(updated);
+    }
+
+    [HttpPost("{id:guid}/activate")]
+    [Authorize(Policy = HrPermissions.EmployeesManage)]
+    public async Task<ActionResult<EmployeeDto>> Activate(Guid id, CancellationToken ct)
+    {
+        var updated = await service.SetActiveAsync(id, true, ct);
+        return updated is null ? NotFound() : Ok(updated);
+    }
+
+    [HttpPost("{id:guid}/deactivate")]
+    [Authorize(Policy = HrPermissions.EmployeesManage)]
+    public async Task<ActionResult<EmployeeDto>> Deactivate(Guid id, CancellationToken ct)
+    {
+        var updated = await service.SetActiveAsync(id, false, ct);
+        return updated is null ? NotFound() : Ok(updated);
+    }
 }

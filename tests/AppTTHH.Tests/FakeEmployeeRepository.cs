@@ -18,4 +18,6 @@ internal sealed class FakeEmployeeRepository : IEmployeeRepository
         Items.Add(employee);
         return Task.CompletedTask;
     }
+
+    public Task UpdateAsync(Employee employee, CancellationToken ct) => Task.CompletedTask;
 }

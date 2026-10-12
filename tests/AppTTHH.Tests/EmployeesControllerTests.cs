@@ -45,6 +45,46 @@ public sealed class EmployeesControllerTests
         Assert.Single(repository.Items);
     }
 
+    [Fact]
+    public async Task Update_ReturnsOk_WhenEmployeeExists()
+    {
+        var repository = new FakeEmployeeRepository();
+        var employee = CreateEmployee("E022", "Original");
+        repository.Items.Add(employee);
+        var controller = new EmployeesController(new EmployeeService(repository));
+
+        var result = await controller.Update(employee.Id, new("Updated", "updated@example.com", "Manager", "People"), default);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var dto = Assert.IsType<EmployeeDto>(ok.Value);
+        Assert.Equal("Updated", dto.FullName);
+    }
+
+    [Fact]
+    public async Task Update_ReturnsNotFound_WhenMissing()
+    {
+        var controller = new EmployeesController(new EmployeeService(new FakeEmployeeRepository()));
+        var result = await controller.Update(Guid.NewGuid(), new("Name", "mail@example.com", "Role", "Area"), default);
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task ActivateAndDeactivate_ReturnUpdatedEmployee()
+    {
+        var repository = new FakeEmployeeRepository();
+        var employee = CreateEmployee("E023", "Lifecycle");
+        repository.Items.Add(employee);
+        var controller = new EmployeesController(new EmployeeService(repository));
+
+        var deactivated = await controller.Deactivate(employee.Id, default);
+        var deactivatedDto = Assert.IsType<EmployeeDto>(Assert.IsType<OkObjectResult>(deactivated.Result).Value);
+        Assert.False(deactivatedDto.IsActive);
+
+        var activated = await controller.Activate(employee.Id, default);
+        var activatedDto = Assert.IsType<EmployeeDto>(Assert.IsType<OkObjectResult>(activated.Result).Value);
+        Assert.True(activatedDto.IsActive);
+    }
+
     private static Employee CreateEmployee(string code, string name) => new()
     {
         EmployeeCode = code,
